@@ -1,0 +1,32 @@
+[project]
+name = "payment-service"
+version = "0.1.0"
+requires-python = ">=3.13"
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+extend-exclude = ["migrations"]
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "I", "B", "C4", "UP", "ASYNC",
+    "ANN", "S", "PTH", "SIM", "TCH", "RUF",
+    "FAST"
+]
+
+ignore = ["D", "ANN401", "B008", "S101", "RUF001", "RUF002", "RUF003"]
+
+[tool.ruff.lint.flake8-annotations]
+ignore-fully-untyped = false
+suppress-none-returning = true
+suppress-dummy-args = true
+
+[tool.ruff.lint.isort]
+known-first-party = ["core", "entrypoints", "payments"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
