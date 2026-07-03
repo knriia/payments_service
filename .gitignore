@@ -4,6 +4,7 @@ __pycache__/
 
 .env
 .env.*
+!.env.example
 
 .idea/
 .vscode/
@@ -15,3 +16,4 @@ __pycache__/
 alembic/versions/*.pyc
 
 *.log
+*.egg-info/
