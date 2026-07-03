@@ -3,6 +3,12 @@ name = "payment-service"
 version = "0.1.0"
 requires-python = ">=3.13"
 
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.15",
+    "pre-commit>=4.6",
+]
+
 [tool.ruff]
 line-length = 120
 target-version = "py313"
