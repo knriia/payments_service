@@ -3,10 +3,15 @@ name = "payment-service"
 version = "0.1.0"
 requires-python = ">=3.13"
 
+dependencies = [
+    "uuid6>=2025.0.1",
+]
+
 [project.optional-dependencies]
 dev = [
     "ruff>=0.15",
     "pre-commit>=4.6",
+    "pytest>=9.1.1",
 ]
 
 [tool.ruff]
