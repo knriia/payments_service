@@ -5,11 +5,15 @@ requires-python = ">=3.13"
 
 dependencies = [
     "uuid6>=2025.0.1",
+    "alembic>=1.18.5",
+    "asyncpg>=0.31.0",
+    "SQLAlchemy>=2.0.51",
+    "pydantic-settings>=2.14.2",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "ruff>=0.15",
+    "ruff>=0.15.20",
     "pre-commit>=4.6",
     "pytest>=9.1.1",
 ]

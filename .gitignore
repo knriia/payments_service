@@ -17,3 +17,5 @@ alembic/versions/*.pyc
 
 *.log
 *.egg-info/
+
+docker-compose.override.yaml
