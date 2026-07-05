@@ -1,4 +1,4 @@
-from payments.infrastructure.db.models.outbox import OutboxModel
-from payments.infrastructure.db.models.payment import PaymentModel
+from payments.infrastructure.db.models.outbox_model import OutboxModel
+from payments.infrastructure.db.models.payment_model import PaymentModel
 
 __all__ = ["OutboxModel", "PaymentModel"]
