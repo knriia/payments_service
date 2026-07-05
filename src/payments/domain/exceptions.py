@@ -12,3 +12,7 @@ class InvalidStatusTransition(PaymentDomainError):
 
 class OutboxAlreadyPublished(PaymentDomainError):
     pass
+
+
+class DuplicateIdempotencyKey(PaymentDomainError):
+    pass
