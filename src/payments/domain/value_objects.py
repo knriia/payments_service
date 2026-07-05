@@ -17,6 +17,10 @@ class PaymentStatus(StrEnum):
     FAILED = "failed"
 
 
+class OutboxEventType(StrEnum):
+    PAYMENT_CREATED = "payment.created"
+
+
 @dataclass(kw_only=True, frozen=True)
 class Money:
     amount: Decimal

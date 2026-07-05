@@ -10,7 +10,7 @@ from payments.domain.value_objects import Money, PaymentStatus
 
 
 @dataclass(kw_only=True)
-class Payment:
+class PaymentEntity:
     id: UUID
     money: Money
     description: str
@@ -29,8 +29,8 @@ class Payment:
         metadata: dict[str, Any],
         idempotency_key: str,
         webhook_url: str,
-    ) -> "Payment":
-        return Payment(
+    ) -> "PaymentEntity":
+        return PaymentEntity(
             id=uuid6(),
             money=money,
             description=description,

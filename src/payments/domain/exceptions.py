@@ -8,3 +8,7 @@ class InvalidPaymentAmount(PaymentDomainError):
 
 class InvalidStatusTransition(PaymentDomainError):
     pass
+
+
+class OutboxAlreadyPublished(PaymentDomainError):
+    pass

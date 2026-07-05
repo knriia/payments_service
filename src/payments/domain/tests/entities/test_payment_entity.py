@@ -4,13 +4,13 @@ from uuid import UUID
 
 import pytest
 
-from payments.domain.entities import Payment
+from payments.domain.entities.payment_entity import PaymentEntity
 from payments.domain.exceptions import InvalidStatusTransition
 from payments.domain.value_objects import Currency, Money, PaymentStatus
 
 
-def _create_payment() -> Payment:
-    return Payment.create(
+def _create_payment() -> PaymentEntity:
+    return PaymentEntity.create(
         money=Money(amount=Decimal("100"), currency=Currency.EUR),
         description="description",
         metadata={"1": 1},
