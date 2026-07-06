@@ -4,7 +4,7 @@ from uuid6 import uuid6
 
 from payments.domain.exceptions import DuplicateIdempotencyKey
 from payments.infrastructure.db.repositories.payment_repository import PaymentRepository
-from payments.infrastructure.tests.factories import create_payment
+from payments.tests.factories import create_payment
 
 
 @pytest.mark.asyncio
