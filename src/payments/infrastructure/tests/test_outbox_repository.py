@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from uuid6 import uuid6
 
 from payments.infrastructure.db.repositories.outbox_repository import OutboxRepository
-from payments.infrastructure.tests.factories import create_outbox
+from payments.tests.factories import create_outbox
 
 
 @pytest.mark.asyncio

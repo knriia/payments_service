@@ -6,7 +6,7 @@ from payments.domain.entities.outbox_entity import OutboxEntity
 
 class IOutboxRepository(ABC):
     @abstractmethod
-    async def add(self, outbox: OutboxEntity) -> None:
+    async def add(self, outbox_entity: OutboxEntity) -> None:
         pass
 
     @abstractmethod

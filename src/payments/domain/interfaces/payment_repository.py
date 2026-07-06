@@ -6,7 +6,7 @@ from payments.domain.entities.payment_entity import PaymentEntity
 
 class IPaymentRepository(ABC):
     @abstractmethod
-    async def add(self, payment: PaymentEntity) -> None:
+    async def add(self, payment_entity: PaymentEntity) -> None:
         pass
 
     @abstractmethod
