@@ -28,3 +28,17 @@ def create_outbox() -> OutboxEntity:
         payload={"payment_id": str(uuid6())},
         created_at=datetime.now(UTC),
     )
+
+
+def create_payment_created_outbox() -> OutboxEntity:
+    return OutboxEntity(
+        id=uuid6(),
+        event_type=OutboxEventType.PAYMENT_CREATED,
+        payload={
+            "payment_id": str(uuid6()),
+            "amount": "100.00",
+            "currency": Currency.RUB.value,
+            "webhook_url": "https://example.com/webhook",
+        },
+        created_at=datetime.now(UTC),
+    )

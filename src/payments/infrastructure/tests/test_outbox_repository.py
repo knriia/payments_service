@@ -45,3 +45,53 @@ async def test_add_and_get_by_id_returns_published_outbox(db_session: AsyncSessi
     assert saved_outbox == outbox
     assert saved_outbox is not None
     assert saved_outbox.published_at == published_at
+
+
+@pytest.mark.asyncio
+async def test_list_unpublished_returns_only_unpublished_outbox_records(db_session: AsyncSession) -> None:
+    repo = OutboxRepository(db_session)
+
+    unpublished_outbox = create_outbox()
+    published_outbox = create_outbox()
+    published_outbox.mark_published(datetime.now(UTC))
+
+    await repo.add(unpublished_outbox)
+    await repo.add(published_outbox)
+    await db_session.commit()
+
+    result = await repo.list_unpublished(limit=10)
+
+    assert result == [unpublished_outbox]
+
+
+@pytest.mark.asyncio
+async def test_list_unpublished_respects_limit(db_session: AsyncSession) -> None:
+    repo = OutboxRepository(db_session)
+
+    first_outbox = create_outbox()
+    second_outbox = create_outbox()
+
+    await repo.add(first_outbox)
+    await repo.add(second_outbox)
+    await db_session.commit()
+
+    result = await repo.list_unpublished(limit=1)
+
+    assert len(result) == 1
+
+
+@pytest.mark.asyncio
+async def test_mark_as_published_sets_published_at(db_session: AsyncSession) -> None:
+    repo = OutboxRepository(db_session)
+    outbox = create_outbox()
+
+    await repo.add(outbox)
+    await db_session.commit()
+
+    await repo.mark_as_published(outbox.id)
+    await db_session.commit()
+
+    saved_outbox = await repo.get_by_id(outbox.id)
+
+    assert saved_outbox is not None
+    assert saved_outbox.published_at is not None

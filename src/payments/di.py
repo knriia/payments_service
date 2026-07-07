@@ -1,11 +1,11 @@
 from dishka import Provider, Scope, provide
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from payments.application.interfaces.outbox_repository import IOutboxRepository
+from payments.application.interfaces.payment_gateway import IPaymentGateway
+from payments.application.interfaces.payment_repository import IPaymentRepository
+from payments.application.interfaces.unit_of_work import IUnitOfWork
 from payments.application.payment_service import PaymentService
-from payments.domain.interfaces.outbox_repository import IOutboxRepository
-from payments.domain.interfaces.payment_gateway import IPaymentGateway
-from payments.domain.interfaces.payment_repository import IPaymentRepository
-from payments.domain.interfaces.unit_of_work import IUnitOfWork
 from payments.infrastructure.db.repositories.outbox_repository import OutboxRepository
 from payments.infrastructure.db.repositories.payment_repository import PaymentRepository
 from payments.infrastructure.db.unit_of_work import UnitOfWork
