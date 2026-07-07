@@ -11,6 +11,7 @@ dependencies = [
     "pydantic-settings>=2.14.2",
     "dishka>=1.10.1",
     "fastapi[standard]>=0.139.0",
+    "faststream[rabbit]>=0.7.1",
 ]
 
 [project.optional-dependencies]
