@@ -16,3 +16,7 @@ class IPaymentRepository(ABC):
     @abstractmethod
     async def get_by_idempotency_key(self, idempotency_key: str) -> PaymentEntity | None:
         pass
+
+    @abstractmethod
+    async def update(self, payment_entity: PaymentEntity) -> None:
+        pass
