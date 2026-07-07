@@ -21,6 +21,11 @@ class OutboxEventType(StrEnum):
     PAYMENT_CREATED = "payment.created"
 
 
+class PaymentGatewayResult(StrEnum):
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+
+
 @dataclass(kw_only=True, frozen=True)
 class Money:
     amount: Decimal

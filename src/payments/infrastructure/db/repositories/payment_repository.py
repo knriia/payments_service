@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -43,3 +43,14 @@ class PaymentRepository(IPaymentRepository):
             return None
 
         return payment_model_to_payment_entity(payment_model=model)
+
+    async def update(self, payment_entity: PaymentEntity) -> None:
+        stmt = (
+            update(PaymentModel)
+            .where(PaymentModel.id == payment_entity.id)
+            .values(
+                status=payment_entity.status.value,
+                processed_at=payment_entity.processed_at,
+            )
+        )
+        await self.session.execute(stmt)

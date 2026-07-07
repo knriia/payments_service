@@ -2,9 +2,15 @@ import pytest
 from uuid6 import uuid6
 
 from payments.application.payment_service import PaymentService
-from payments.application.tests.fakes import FakeOutboxRepository, FakePaymentRepository, FakeUnitOfWork
+from payments.application.tests.fakes import (
+    FakeOutboxRepository,
+    FakePaymentGateway,
+    FakePaymentRepository,
+    FakeUnitOfWork,
+)
 from payments.domain.entities.outbox_entity import OutboxEntity
 from payments.domain.entities.payment_entity import PaymentEntity
+from payments.domain.value_objects import PaymentGatewayResult, PaymentStatus
 from payments.tests.factories import create_payment
 
 
@@ -13,10 +19,12 @@ async def test_create_payment_saves_payment_and_outbox_and_commits() -> None:
     uow = FakeUnitOfWork()
     payment_repo = FakePaymentRepository()
     outbox_repo = FakeOutboxRepository()
+    payment_gateway = FakePaymentGateway(result=PaymentGatewayResult.SUCCEEDED)
     payment_service = PaymentService(
         uow=uow,
         payment_repo=payment_repo,
         outbox_repo=outbox_repo,
+        payment_gateway=payment_gateway,
     )
     payment = create_payment()
     payment_created = await payment_service.create_payment(payment_entity=payment)
@@ -32,10 +40,12 @@ async def test_create_payment_creates_outbox_with_payment_payload() -> None:
     uow = FakeUnitOfWork()
     payment_repo = FakePaymentRepository()
     outbox_repo = FakeOutboxRepository()
+    payment_gateway = FakePaymentGateway(result=PaymentGatewayResult.SUCCEEDED)
     payment_service = PaymentService(
         uow=uow,
         payment_repo=payment_repo,
         outbox_repo=outbox_repo,
+        payment_gateway=payment_gateway,
     )
     payment = create_payment()
 
@@ -56,10 +66,12 @@ async def test_create_payment_returns_existing_payment_when_idempotency_key_exis
     uow = FakeUnitOfWork()
     payment_repo = FakePaymentRepository()
     outbox_repo = FakeOutboxRepository()
+    payment_gateway = FakePaymentGateway(result=PaymentGatewayResult.SUCCEEDED)
     payment_service = PaymentService(
         uow=uow,
         payment_repo=payment_repo,
         outbox_repo=outbox_repo,
+        payment_gateway=payment_gateway,
     )
     existing_payment = create_payment(idempotency_key="same-key")
     new_payment = create_payment(idempotency_key="same-key")
@@ -83,10 +95,12 @@ async def test_create_payment_rolls_back_when_payment_repository_fails() -> None
     uow = FakeUnitOfWork()
     payment_repo = FailingPaymentRepository()
     outbox_repo = FakeOutboxRepository()
+    payment_gateway = FakePaymentGateway(result=PaymentGatewayResult.SUCCEEDED)
     payment_service = PaymentService(
         uow=uow,
         payment_repo=payment_repo,
         outbox_repo=outbox_repo,
+        payment_gateway=payment_gateway,
     )
     payment = create_payment()
 
@@ -108,10 +122,12 @@ async def test_create_payment_rolls_back_when_outbox_repository_fails() -> None:
     uow = FakeUnitOfWork()
     payment_repo = FakePaymentRepository()
     outbox_repo = FailingOutboxRepository()
+    payment_gateway = FakePaymentGateway(result=PaymentGatewayResult.SUCCEEDED)
     payment_service = PaymentService(
         uow=uow,
         payment_repo=payment_repo,
         outbox_repo=outbox_repo,
+        payment_gateway=payment_gateway,
     )
     payment = create_payment()
 
@@ -129,10 +145,12 @@ async def test_get_payment_by_id_returns_payment_when_payment_exists() -> None:
     uow = FakeUnitOfWork()
     payment_repo = FakePaymentRepository()
     outbox_repo = FakeOutboxRepository()
+    payment_gateway = FakePaymentGateway(result=PaymentGatewayResult.SUCCEEDED)
     payment_service = PaymentService(
         uow=uow,
         payment_repo=payment_repo,
         outbox_repo=outbox_repo,
+        payment_gateway=payment_gateway,
     )
     payment = create_payment()
     payment_repo.payments.append(payment)
@@ -147,11 +165,87 @@ async def test_get_payment_by_id_returns_none_when_payment_not_found() -> None:
     uow = FakeUnitOfWork()
     payment_repo = FakePaymentRepository()
     outbox_repo = FakeOutboxRepository()
+    payment_gateway = FakePaymentGateway(result=PaymentGatewayResult.SUCCEEDED)
     payment_service = PaymentService(
         uow=uow,
         payment_repo=payment_repo,
         outbox_repo=outbox_repo,
+        payment_gateway=payment_gateway,
     )
 
     result = await payment_service.get_payment_by_id(payment_id=uuid6())
     assert result is None
+
+
+@pytest.mark.asyncio
+async def test_process_payment_marks_payment_as_succeeded_and_commits() -> None:
+    uow = FakeUnitOfWork()
+    payment_repo = FakePaymentRepository()
+    outbox_repo = FakeOutboxRepository()
+    payment_gateway = FakePaymentGateway(result=PaymentGatewayResult.SUCCEEDED)
+    payment_service = PaymentService(
+        uow=uow,
+        payment_repo=payment_repo,
+        outbox_repo=outbox_repo,
+        payment_gateway=payment_gateway,
+    )
+    payment = create_payment()
+    payment_repo.payments.append(payment)
+
+    result = await payment_service.process_payment(payment_id=payment.id)
+
+    assert result == payment
+    assert payment.status == PaymentStatus.SUCCEEDED
+    assert payment.processed_at is not None
+    assert payment_gateway.processed_payments == [payment]
+    assert payment_repo.updated_payments == [payment]
+    assert uow.committed is True
+    assert uow.rolled_back is False
+
+
+@pytest.mark.asyncio
+async def test_process_payment_marks_payment_as_failed_and_commits() -> None:
+    uow = FakeUnitOfWork()
+    payment_repo = FakePaymentRepository()
+    outbox_repo = FakeOutboxRepository()
+    payment_gateway = FakePaymentGateway(result=PaymentGatewayResult.FAILED)
+    payment_service = PaymentService(
+        uow=uow,
+        payment_repo=payment_repo,
+        outbox_repo=outbox_repo,
+        payment_gateway=payment_gateway,
+    )
+    payment = create_payment()
+    payment_repo.payments.append(payment)
+
+    result = await payment_service.process_payment(payment_id=payment.id)
+
+    assert result == payment
+    assert payment.status == PaymentStatus.FAILED
+    assert payment.processed_at is not None
+    assert payment_gateway.processed_payments == [payment]
+    assert payment_repo.updated_payments == [payment]
+    assert uow.committed is True
+    assert uow.rolled_back is False
+
+
+@pytest.mark.asyncio
+async def test_process_payment_returns_none_when_payment_not_found() -> None:
+    uow = FakeUnitOfWork()
+    payment_repo = FakePaymentRepository()
+    outbox_repo = FakeOutboxRepository()
+    payment_gateway = FakePaymentGateway(result=PaymentGatewayResult.SUCCEEDED)
+    payment_service = PaymentService(
+        uow=uow,
+        payment_repo=payment_repo,
+        outbox_repo=outbox_repo,
+        payment_gateway=payment_gateway,
+    )
+
+    result = await payment_service.process_payment(payment_id=uuid6())
+
+    assert result is None
+    assert payment_repo.updated_payments == []
+    assert payment_gateway.processed_payments == []
+    assert uow.committed is False
+    assert uow.rolled_back is False
