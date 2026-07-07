@@ -55,7 +55,7 @@ class PaymentService:
         return await self.outbox_repo.get_by_id(outbox_id=outbox_id)
 
     async def process_payment(self, payment_id: UUID) -> PaymentEntity | None:
-        payment = await self.payment_repo.get_by_id(payment_id)
+        payment = await self.get_payment_by_id(payment_id=payment_id)
         if payment is None:
             return None
 
