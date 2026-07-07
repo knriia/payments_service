@@ -1,12 +1,12 @@
 from datetime import UTC, datetime
 from uuid import UUID
 
+from payments.application.interfaces.outbox_repository import IOutboxRepository
+from payments.application.interfaces.payment_gateway import IPaymentGateway
+from payments.application.interfaces.payment_repository import IPaymentRepository
+from payments.application.interfaces.unit_of_work import IUnitOfWork
 from payments.domain.entities.outbox_entity import OutboxEntity
 from payments.domain.entities.payment_entity import PaymentEntity
-from payments.domain.interfaces.outbox_repository import IOutboxRepository
-from payments.domain.interfaces.payment_gateway import IPaymentGateway
-from payments.domain.interfaces.payment_repository import IPaymentRepository
-from payments.domain.interfaces.unit_of_work import IUnitOfWork
 from payments.domain.value_objects import PaymentGatewayResult
 
 

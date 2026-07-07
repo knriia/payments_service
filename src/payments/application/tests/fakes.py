@@ -1,11 +1,12 @@
+from datetime import UTC, datetime
 from uuid import UUID
 
+from payments.application.interfaces.outbox_repository import IOutboxRepository
+from payments.application.interfaces.payment_gateway import IPaymentGateway
+from payments.application.interfaces.payment_repository import IPaymentRepository
+from payments.application.interfaces.unit_of_work import IUnitOfWork
 from payments.domain.entities.outbox_entity import OutboxEntity
 from payments.domain.entities.payment_entity import PaymentEntity
-from payments.domain.interfaces.outbox_repository import IOutboxRepository
-from payments.domain.interfaces.payment_gateway import IPaymentGateway
-from payments.domain.interfaces.payment_repository import IPaymentRepository
-from payments.domain.interfaces.unit_of_work import IUnitOfWork
 from payments.domain.value_objects import PaymentGatewayResult
 
 
@@ -49,6 +50,17 @@ class FakeOutboxRepository(IOutboxRepository):
 
     async def get_by_id(self, outbox_id: UUID) -> OutboxEntity | None:
         return next((o for o in self.outbox_records if o.id == outbox_id), None)
+
+    async def list_unpublished(self, limit: int) -> list[OutboxEntity]:
+        unpublished = [o for o in self.outbox_records if o.published_at is None]
+        return unpublished[:limit]
+
+    async def mark_as_published(self, outbox_id: UUID) -> None:
+        outbox = next((o for o in self.outbox_records if o.id == outbox_id), None)
+        if outbox is None:
+            return
+
+        outbox.mark_published(datetime.now(UTC))
 
 
 class FakePaymentGateway(IPaymentGateway):

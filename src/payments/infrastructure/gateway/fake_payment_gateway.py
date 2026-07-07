@@ -3,8 +3,8 @@
 import asyncio
 import random
 
+from payments.application.interfaces.payment_gateway import IPaymentGateway
 from payments.domain.entities.payment_entity import PaymentEntity
-from payments.domain.interfaces.payment_gateway import IPaymentGateway
 from payments.domain.value_objects import PaymentGatewayResult
 
 

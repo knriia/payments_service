@@ -4,9 +4,9 @@ from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from payments.application.interfaces.payment_repository import IPaymentRepository
 from payments.domain.entities.payment_entity import PaymentEntity
 from payments.domain.exceptions import DuplicateIdempotencyKey
-from payments.domain.interfaces.payment_repository import IPaymentRepository
 from payments.infrastructure.db.mappers.payment_mapper import (
     payment_entity_to_payment_model,
     payment_model_to_payment_entity,

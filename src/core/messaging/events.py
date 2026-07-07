@@ -1,6 +1,6 @@
 from faststream.rabbit import RabbitExchange, RabbitQueue
 
-from core.messaging.topology import (
+from core.messaging.event_names import (
     PAYMENTS_DLQ,
     PAYMENTS_EXCHANGE,
     PAYMENTS_NEW_QUEUE,

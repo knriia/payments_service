@@ -8,6 +8,8 @@ from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
 from core.config import Settings
+from payments.application.interfaces.payment_gateway import IPaymentGateway
+from payments.application.interfaces.unit_of_work import IUnitOfWork
 from payments.application.payment_service import PaymentService
 from payments.application.tests.fakes import (
     FakeOutboxRepository,
@@ -15,8 +17,6 @@ from payments.application.tests.fakes import (
     FakePaymentRepository,
     FakeUnitOfWork,
 )
-from payments.domain.interfaces.payment_gateway import IPaymentGateway
-from payments.domain.interfaces.unit_of_work import IUnitOfWork
 from payments.domain.value_objects import PaymentGatewayResult
 from payments.presentation.payment_routes import payment_router
 
