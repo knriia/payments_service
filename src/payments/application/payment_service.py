@@ -8,6 +8,7 @@ from payments.application.interfaces.payment_repository import IPaymentRepositor
 from payments.application.interfaces.unit_of_work import IUnitOfWork
 from payments.domain.entities.outbox_entity import OutboxEntity
 from payments.domain.entities.payment_entity import PaymentEntity
+from payments.domain.exceptions import DuplicateIdempotencyKey
 from payments.domain.value_objects import PaymentGatewayResult, PaymentStatus
 
 logger = get_logger(__name__)
@@ -36,11 +37,23 @@ class PaymentService:
             )
             return existing_payload
 
-        async with self.uow:
-            await self.payment_repo.add(payment_entity=payment_entity)
-            await self._create_outbox(payment_entity=payment_entity)
-            await self.uow.commit()
-            logger.info("Payment created: payment_id=%s outbox_created=true", payment_entity.id)
+        try:
+            async with self.uow:
+                await self.payment_repo.add(payment_entity=payment_entity)
+                await self._create_outbox(payment_entity=payment_entity)
+                await self.uow.commit()
+                logger.info("Payment created: payment_id=%s outbox_created=true", payment_entity.id)
+
+        except DuplicateIdempotencyKey:
+            existing_payment = await self.get_payment_idempotency_key(payment_entity.idempotency_key)
+            if existing_payment is not None:
+                logger.info(
+                    "Payment idempotency race resolved: payment_id=%s idempotency_key=%s",
+                    existing_payment.id,
+                    existing_payment.idempotency_key,
+                )
+                return existing_payment
+            raise
 
         return payment_entity
 

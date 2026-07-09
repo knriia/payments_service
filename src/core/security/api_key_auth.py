@@ -1,3 +1,4 @@
+import secrets
 from typing import Annotated
 
 from dishka.integrations.fastapi import FromDishka, inject
@@ -7,7 +8,7 @@ from core.config import Settings
 
 
 def verify_api_key_value(x_api_key: str | None, settings: Settings) -> None:
-    if x_api_key != settings.API_KEY:
+    if x_api_key is None or not secrets.compare_digest(x_api_key, settings.API_KEY):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid API key",
