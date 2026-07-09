@@ -6,6 +6,7 @@ from payments.application.interfaces.outbox_repository import IOutboxRepository
 from payments.application.interfaces.payment_gateway import IPaymentGateway
 from payments.application.interfaces.payment_repository import IPaymentRepository
 from payments.application.interfaces.unit_of_work import IUnitOfWork
+from payments.application.interfaces.webhook_sender import IWebhookSender
 from payments.domain.entities.outbox_entity import OutboxEntity
 from payments.domain.entities.payment_entity import PaymentEntity
 from payments.domain.exceptions import DuplicateIdempotencyKey
@@ -21,11 +22,13 @@ class PaymentService:
         payment_repo: IPaymentRepository,
         outbox_repo: IOutboxRepository,
         payment_gateway: IPaymentGateway,
+        webhook_sender: IWebhookSender,
     ):
         self.uow = uow
         self.payment_repo = payment_repo
         self.outbox_repo = outbox_repo
         self.payment_gateway = payment_gateway
+        self.webhook_sender = webhook_sender
 
     async def create_payment(self, payment_entity: PaymentEntity) -> PaymentEntity:
         existing_payload = await self.get_payment_idempotency_key(payment_entity.idempotency_key)
@@ -98,4 +101,5 @@ class PaymentService:
             await self.uow.commit()
             logger.info("Payment processed: payment_id=%s status=%s", payment.id, payment.status)
 
+        await self.webhook_sender.send_payment_processed(payment)
         return payment

@@ -23,6 +23,14 @@ class Settings(BaseSettings):
     MAX_RETRY_COUNT: int
     BASE_RETRY_DELAY_SECONDS: int
 
+    WEBHOOK_ATTEMPTS: int
+    WEBHOOK_BASE_DELAY_SECONDS: int
+    WEBHOOK_TIMEOUT_SECONDS: int
+
+    PAYMENT_GATEWAY_SUCCESS_RATE: float
+    PAYMENT_GATEWAY_MIN_DELAY_SECONDS: float
+    PAYMENT_GATEWAY_MAX_DELAY_SECONDS: float
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     @property

@@ -10,6 +10,7 @@ from httpx import ASGITransport, AsyncClient
 from core.config import Settings
 from payments.application.interfaces.payment_gateway import IPaymentGateway
 from payments.application.interfaces.unit_of_work import IUnitOfWork
+from payments.application.interfaces.webhook_sender import IWebhookSender
 from payments.application.payment_service import PaymentService
 from payments.application.tests.fakes import (
     FakeOutboxRepository,
@@ -60,12 +61,14 @@ class PaymentTestProvider(Provider):
         payment_repo: FakePaymentRepository,
         outbox_repo: FakeOutboxRepository,
         payment_gateway: IPaymentGateway,
+        webhook_sender: IWebhookSender,
     ) -> PaymentService:
         return PaymentService(
             uow=uow,
             payment_repo=payment_repo,
             outbox_repo=outbox_repo,
             payment_gateway=payment_gateway,
+            webhook_sender=webhook_sender,
         )
 
 
