@@ -3,7 +3,7 @@ from dishka import Provider, Scope, make_async_container, provide
 from faststream.rabbit import RabbitBroker
 
 from core.config import Settings
-from core.messaging.di import OutboxPublisherProvider
+from core.messaging.outbox_publisher_di import OutboxPublisherProvider
 
 
 class SettingsTestProvider(Provider):

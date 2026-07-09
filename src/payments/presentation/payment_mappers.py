@@ -23,5 +23,5 @@ def payment_dto_to_entity(payment_dto: InputPaymentDTO, idempotency_key: str) ->
         description=payment_dto.description,
         metadata=payment_dto.metadata,
         idempotency_key=idempotency_key,
-        webhook_url=payment_dto.webhook_url,
+        webhook_url=str(payment_dto.webhook_url),
     )
