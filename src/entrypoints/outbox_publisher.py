@@ -4,17 +4,17 @@ import signal
 
 from dishka import AsyncContainer
 
+from core.config import Settings
+from core.logging import setup_logging
 from entrypoints.container import create_outbox_publisher_container
 from payments.application.outbox_publisher_service import OutboxPublisherService
-
-PUBLISH_LIMIT = 100
-POLL_INTERVAL_SECONDS = 2
 
 
 async def run_once(container: AsyncContainer) -> int:
     async with container() as request_container:
         service = await request_container.get(OutboxPublisherService)
-        return await service.publish_pending(limit=PUBLISH_LIMIT)
+        settings = await request_container.get(Settings)
+        return await service.publish_pending(limit=settings.PUBLISH_LIMIT)
 
 
 async def run_worker() -> None:
@@ -32,12 +32,14 @@ async def run_worker() -> None:
         while not stop_event.is_set():
             await run_once(container)
             with contextlib.suppress(TimeoutError):
-                await asyncio.wait_for(stop_event.wait(), timeout=POLL_INTERVAL_SECONDS)
+                settings = await container.get(Settings)
+                await asyncio.wait_for(stop_event.wait(), timeout=settings.POLL_INTERVAL_SECONDS)
     finally:
         await container.close()
 
 
 def main() -> None:
+    setup_logging()
     asyncio.run(run_worker())
 
 

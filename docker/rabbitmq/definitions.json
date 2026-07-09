@@ -1,0 +1,91 @@
+{
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "users": [
+    {
+      "name": "guest",
+      "password": "guest",
+      "tags": "administrator"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "guest",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "payments",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "payments.new",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic"
+      }
+    },
+    {
+      "name": "payments.new.retry",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-dead-letter-exchange": "payments",
+        "x-dead-letter-routing-key": "payments.new"
+      }
+    },
+    {
+      "name": "payments.new.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic"
+      }
+    }
+  ],
+  "bindings": [
+    {
+      "source": "payments",
+      "vhost": "/",
+      "destination": "payments.new",
+      "destination_type": "queue",
+      "routing_key": "payments.new",
+      "arguments": {}
+    },
+    {
+      "source": "payments",
+      "vhost": "/",
+      "destination": "payments.new.retry",
+      "destination_type": "queue",
+      "routing_key": "payments.new.retry",
+      "arguments": {}
+    },
+    {
+      "source": "payments",
+      "vhost": "/",
+      "destination": "payments.new.dlq",
+      "destination_type": "queue",
+      "routing_key": "payments.new.dlq",
+      "arguments": {}
+    }
+  ]
+}

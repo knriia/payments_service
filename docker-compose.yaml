@@ -21,10 +21,12 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: "${RABBIT_USER}"
       RABBITMQ_DEFAULT_PASS: "${RABBIT_PASS}"
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: '-rabbitmq_management load_definitions "/etc/rabbitmq/definitions.json"'
     ports:
       - "127.0.0.1:15672:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+      - ./docker/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 5s
@@ -71,6 +73,22 @@ services:
       context: .
       dockerfile: docker/Dockerfile.api
     command: python -m entrypoints.outbox_publisher
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
+
+  consumer:
+    container_name: payment_consumer
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    command: python -m entrypoints.consumer
     env_file:
       - .env
     depends_on:

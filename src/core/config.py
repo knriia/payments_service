@@ -15,6 +15,14 @@ class Settings(BaseSettings):
 
     API_KEY: str
 
+    PUBLISH_LIMIT: int
+    POLL_INTERVAL_SECONDS: int
+
+    RETRY_HEADER: str
+    LAST_ERROR_HEADER: str
+    MAX_RETRY_COUNT: int
+    BASE_RETRY_DELAY_SECONDS: int
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     @property

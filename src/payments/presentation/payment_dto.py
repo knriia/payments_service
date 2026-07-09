@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 
 from payments.domain.value_objects import Currency, PaymentStatus
 
@@ -13,11 +13,16 @@ class InputPaymentDTO(BaseModel):
     currency: Currency
     description: str
     metadata: dict[str, Any]
-    webhook_url: str
+    webhook_url: HttpUrl
 
 
-class OutputPaymentDTO(InputPaymentDTO):
+class OutputPaymentDTO(BaseModel):
     id: UUID
     status: PaymentStatus
+    amount: Decimal
+    currency: Currency
+    description: str
+    metadata: dict[str, Any]
+    webhook_url: str
     created_at: datetime
     processed_at: datetime | None

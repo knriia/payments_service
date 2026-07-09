@@ -1,13 +1,16 @@
 from datetime import UTC, datetime
 from uuid import UUID
 
+from core.logging import get_logger
 from payments.application.interfaces.outbox_repository import IOutboxRepository
 from payments.application.interfaces.payment_gateway import IPaymentGateway
 from payments.application.interfaces.payment_repository import IPaymentRepository
 from payments.application.interfaces.unit_of_work import IUnitOfWork
 from payments.domain.entities.outbox_entity import OutboxEntity
 from payments.domain.entities.payment_entity import PaymentEntity
-from payments.domain.value_objects import PaymentGatewayResult
+from payments.domain.value_objects import PaymentGatewayResult, PaymentStatus
+
+logger = get_logger(__name__)
 
 
 class PaymentService:
@@ -26,12 +29,18 @@ class PaymentService:
     async def create_payment(self, payment_entity: PaymentEntity) -> PaymentEntity:
         existing_payload = await self.get_payment_idempotency_key(payment_entity.idempotency_key)
         if existing_payload:
+            logger.info(
+                "Payment idempotency hit: payment_id=%s idempotency_key=%s",
+                existing_payload.id,
+                existing_payload.idempotency_key,
+            )
             return existing_payload
 
         async with self.uow:
             await self.payment_repo.add(payment_entity=payment_entity)
             await self._create_outbox(payment_entity=payment_entity)
             await self.uow.commit()
+            logger.info("Payment created: payment_id=%s outbox_created=true", payment_entity.id)
 
         return payment_entity
 
@@ -57,7 +66,12 @@ class PaymentService:
     async def process_payment(self, payment_id: UUID) -> PaymentEntity | None:
         payment = await self.get_payment_by_id(payment_id=payment_id)
         if payment is None:
+            logger.warning("Payment processing skipped: payment_id=%s reason=not_found", payment_id)
             return None
+
+        if payment.status != PaymentStatus.PENDING:
+            logger.info("Payment processing skipped: payment_id=%s status=%s", payment.id, payment.status)
+            return payment
 
         result = await self.payment_gateway.process(payment_entity=payment)
 
@@ -69,5 +83,6 @@ class PaymentService:
 
             await self.payment_repo.update(payment_entity=payment)
             await self.uow.commit()
+            logger.info("Payment processed: payment_id=%s status=%s", payment.id, payment.status)
 
         return payment
