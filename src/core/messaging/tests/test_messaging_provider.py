@@ -3,7 +3,7 @@ from dishka import Provider, Scope, make_async_container, provide
 from faststream.rabbit import RabbitBroker
 
 from core.config import Settings
-from core.messaging.di import MessagingProvider
+from core.messaging.di import OutboxPublisherProvider
 
 
 class SettingsTestProvider(Provider):
@@ -25,7 +25,7 @@ class SettingsTestProvider(Provider):
 
 @pytest.mark.asyncio
 async def test_container_resolves_rabbit_broker() -> None:
-    container = make_async_container(SettingsTestProvider(), MessagingProvider())
+    container = make_async_container(SettingsTestProvider(), OutboxPublisherProvider())
     broker = await container.get(RabbitBroker)
 
     assert isinstance(broker, RabbitBroker)

@@ -30,7 +30,11 @@ class OutboxRepository(IOutboxRepository):
 
     async def list_unpublished(self, limit: int) -> list[OutboxEntity]:
         stmt = (
-            select(OutboxModel).where(OutboxModel.published_at.is_(None)).order_by(OutboxModel.created_at).limit(limit)
+            select(OutboxModel)
+            .where(OutboxModel.published_at.is_(None))
+            .order_by(OutboxModel.created_at)
+            .limit(limit)
+            .with_for_update(skip_locked=True)
         )
         result = await self.session.execute(stmt)
         models = result.scalars().all()

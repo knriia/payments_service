@@ -65,6 +65,22 @@ services:
       - ./alembic.ini:/app/alembic.ini
     restart: "no"
 
+  outbox_publisher:
+    container_name: payment_outbox_publisher
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    command: python -m entrypoints.outbox_publisher
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
+
 volumes:
   postgres_data:
   rabbitmq_data:
