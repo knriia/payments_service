@@ -12,6 +12,7 @@ dependencies = [
     "dishka>=1.10.1",
     "fastapi[standard]>=0.139.0",
     "faststream[rabbit]>=0.7.1",
+    "httpx>=0.28.1",
     "dishka-faststream>=0.7.0",
 ]
 
@@ -21,7 +22,6 @@ dev = [
     "pre-commit>=4.6",
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",
-    "httpx>=0.28.1",
 ]
 
 [tool.ruff]
