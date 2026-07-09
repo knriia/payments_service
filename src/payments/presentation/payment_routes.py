@@ -9,7 +9,7 @@ from payments.application.payment_service import PaymentService
 from payments.presentation.payment_dto import InputPaymentDTO, OutputPaymentDTO
 from payments.presentation.payment_mappers import payment_dto_to_entity, payment_entity_to_dto
 
-payment_router = APIRouter(prefix="/payments", tags=["payments"], dependencies=[Depends(verify_api_key)])
+payment_router = APIRouter(prefix="/api/v1/payments", tags=["payments"], dependencies=[Depends(verify_api_key)])
 
 
 @payment_router.get("/{payment_id}")

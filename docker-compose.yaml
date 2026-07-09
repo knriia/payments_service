@@ -1,5 +1,6 @@
 services:
   postgres:
+    container_name: payment_postgres
     image: postgres:17-alpine
     environment:
       POSTGRES_DB: ${DB_NAME}
@@ -15,6 +16,7 @@ services:
     restart: unless-stopped
 
   rabbitmq:
+    container_name: payment_rabbitmq
     image: rabbitmq:4-management-alpine
     environment:
       RABBITMQ_DEFAULT_USER: "${RABBIT_USER}"
@@ -29,6 +31,39 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+
+  api:
+    container_name: payment_api
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    env_file:
+      - .env
+    ports:
+      - "8001:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
+
+  migrations:
+    container_name: payment_migrations
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    command: alembic upgrade head
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/app/migrations
+      - ./alembic.ini:/app/alembic.ini
+    restart: "no"
 
 volumes:
   postgres_data:

@@ -84,10 +84,8 @@ async def client() -> AsyncIterable[AsyncClient]:
 
 
 PAYMENT_PAYLOAD = {
-    "money": {
-        "amount": "100.00",
-        "currency": "RUB",
-    },
+    "amount": "100.00",
+    "currency": "RUB",
     "description": "test payment",
     "metadata": {"order_id": "order-1"},
     "webhook_url": "https://example.com/webhook",
@@ -97,7 +95,7 @@ PAYMENT_PAYLOAD = {
 @pytest.mark.asyncio
 async def test_create_payment_returns_202(client: AsyncClient) -> None:
     response = await client.post(
-        "/payments",
+        "/api/v1/payments",
         json=PAYMENT_PAYLOAD,
         headers={
             "X-API-Key": "test-api-key",
@@ -108,14 +106,14 @@ async def test_create_payment_returns_202(client: AsyncClient) -> None:
     assert response.status_code == 202
     data = response.json()
     assert data["status"] == "pending"
-    assert data["idempotency_key"] == "same-key"
-    assert data["money"] == {"amount": "100.00", "currency": "RUB"}
+    assert data["amount"] == "100.00"
+    assert data["currency"] == "RUB"
 
 
 @pytest.mark.asyncio
 async def test_get_payment_returns_payment(client: AsyncClient) -> None:
     create_response = await client.post(
-        "/payments",
+        "/api/v1/payments",
         json=PAYMENT_PAYLOAD,
         headers={
             "X-API-Key": "test-api-key",
@@ -125,7 +123,7 @@ async def test_get_payment_returns_payment(client: AsyncClient) -> None:
 
     payment_id = create_response.json()["id"]
     response = await client.get(
-        f"/payments/{payment_id}",
+        f"/api/v1/payments/{payment_id}",
         headers={"X-API-Key": "test-api-key"},
     )
 
@@ -136,7 +134,7 @@ async def test_get_payment_returns_payment(client: AsyncClient) -> None:
 @pytest.mark.asyncio
 async def test_get_missing_payment_returns_404(client: AsyncClient) -> None:
     response = await client.get(
-        "/payments/01984536-e7b7-7110-b33f-3f1743f721aa",
+        "/api/v1/payments/01984536-e7b7-7110-b33f-3f1743f721aa",
         headers={"X-API-Key": "test-api-key"},
     )
 
@@ -151,8 +149,8 @@ async def test_create_payment_with_same_idempotency_key_returns_same_payment(cli
         "Idempotency-Key": "same-key",
     }
 
-    first_response = await client.post("/payments", json=PAYMENT_PAYLOAD, headers=headers)
-    second_response = await client.post("/payments", json=PAYMENT_PAYLOAD, headers=headers)
+    first_response = await client.post("/api/v1/payments", json=PAYMENT_PAYLOAD, headers=headers)
+    second_response = await client.post("/api/v1/payments", json=PAYMENT_PAYLOAD, headers=headers)
 
     assert first_response.status_code == 202
     assert second_response.status_code == 202
@@ -162,7 +160,7 @@ async def test_create_payment_with_same_idempotency_key_returns_same_payment(cli
 @pytest.mark.asyncio
 async def test_create_payment_without_api_key_returns_401(client: AsyncClient) -> None:
     response = await client.post(
-        "/payments",
+        "/api/v1/payments",
         json=PAYMENT_PAYLOAD,
         headers={"Idempotency-Key": "same-key"},
     )
@@ -173,7 +171,7 @@ async def test_create_payment_without_api_key_returns_401(client: AsyncClient) -
 @pytest.mark.asyncio
 async def test_create_payment_with_invalid_api_key_returns_401(client: AsyncClient) -> None:
     response = await client.post(
-        "/payments",
+        "/api/v1/payments",
         json=PAYMENT_PAYLOAD,
         headers={
             "X-API-Key": "wrong-key",
@@ -187,7 +185,7 @@ async def test_create_payment_with_invalid_api_key_returns_401(client: AsyncClie
 @pytest.mark.asyncio
 async def test_create_payment_without_idempotency_key_returns_422(client: AsyncClient) -> None:
     response = await client.post(
-        "/payments",
+        "/api/v1/payments",
         json=PAYMENT_PAYLOAD,
         headers={"X-API-Key": "test-api-key"},
     )

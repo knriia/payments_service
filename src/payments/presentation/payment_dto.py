@@ -1,14 +1,16 @@
 from datetime import datetime
+from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel
 
-from payments.domain.value_objects import Money, PaymentStatus
+from payments.domain.value_objects import Currency, PaymentStatus
 
 
 class InputPaymentDTO(BaseModel):
-    money: Money
+    amount: Decimal
+    currency: Currency
     description: str
     metadata: dict[str, Any]
     webhook_url: str
@@ -17,6 +19,5 @@ class InputPaymentDTO(BaseModel):
 class OutputPaymentDTO(InputPaymentDTO):
     id: UUID
     status: PaymentStatus
-    idempotency_key: str
     created_at: datetime
     processed_at: datetime | None
