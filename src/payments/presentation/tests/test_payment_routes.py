@@ -17,6 +17,7 @@ from payments.application.tests.fakes import (
     FakePaymentGateway,
     FakePaymentRepository,
     FakeUnitOfWork,
+    FakeWebhookSender,
 )
 from payments.domain.value_objects import PaymentGatewayResult
 from payments.presentation.payment_routes import payment_router
@@ -31,9 +32,23 @@ class SettingsTestProvider(Provider):
             DB_NAME="test",
             DB_USER="test",
             DB_PASSWORD="test",  # noqa: S106
+            RABBIT_HOST="localhost",
+            RABBIT_PORT="5672",
             RABBIT_USER="guest",
             RABBIT_PASS="guest",  # noqa: S106
             API_KEY="test-api-key",
+            PUBLISH_LIMIT=100,
+            POLL_INTERVAL_SECONDS=2,
+            RETRY_HEADER="x-retry-count",
+            LAST_ERROR_HEADER="x-last-error",
+            MAX_RETRY_COUNT=3,
+            BASE_RETRY_DELAY_SECONDS=2,
+            WEBHOOK_ATTEMPTS=3,
+            WEBHOOK_BASE_DELAY_SECONDS=2,
+            WEBHOOK_TIMEOUT_SECONDS=5,
+            PAYMENT_GATEWAY_SUCCESS_RATE=0.9,
+            PAYMENT_GATEWAY_MIN_DELAY_SECONDS=2,
+            PAYMENT_GATEWAY_MAX_DELAY_SECONDS=5,
         )
 
 
@@ -53,6 +68,10 @@ class PaymentTestProvider(Provider):
     @provide(scope=Scope.APP)
     def payment_gateway(self) -> IPaymentGateway:
         return FakePaymentGateway(result=PaymentGatewayResult.SUCCEEDED)
+
+    @provide(scope=Scope.APP)
+    def webhook_sender(self) -> IWebhookSender:
+        return FakeWebhookSender()
 
     @provide(scope=Scope.REQUEST)
     def payment_service(
