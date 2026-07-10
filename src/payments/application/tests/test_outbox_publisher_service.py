@@ -16,6 +16,11 @@ class FakeEventPublisher(IEventPublisher):
         self.published.append((event_type, payload))
 
 
+class FailingEventPublisher(IEventPublisher):
+    async def publish(self, event_type: OutboxEventType, payload: object) -> None:
+        raise RuntimeError("publish failed")
+
+
 @pytest.mark.asyncio
 async def test_publish_pending_publishes_unpublished_outbox_and_marks_as_published() -> None:
     uow = FakeUnitOfWork()
@@ -81,3 +86,23 @@ async def test_publish_pending_commits_when_no_unpublished_records() -> None:
     assert event_publisher.published == []
     assert uow.committed is True
     assert uow.rolled_back is False
+
+
+@pytest.mark.asyncio
+async def test_publish_pending_rolls_back_when_publish_fails() -> None:
+    uow = FakeUnitOfWork()
+    outbox_repo = FakeOutboxRepository()
+    service = OutboxPublisherService(
+        uow=uow,
+        outbox_repo=outbox_repo,
+        event_publisher=FailingEventPublisher(),
+    )
+    outbox = create_payment_created_outbox()
+    outbox_repo.outbox_records.append(outbox)
+
+    with pytest.raises(RuntimeError, match="publish failed"):
+        await service.publish_pending(limit=10)
+
+    assert outbox.published_at is None
+    assert uow.committed is False
+    assert uow.rolled_back is True

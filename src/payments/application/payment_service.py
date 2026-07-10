@@ -76,9 +76,6 @@ class PaymentService:
         outbox_entity = OutboxEntity.create(payload=payload)
         await self.outbox_repo.add(outbox_entity=outbox_entity)
 
-    async def get_outbox_payment_id(self, outbox_id: UUID) -> OutboxEntity | None:
-        return await self.outbox_repo.get_by_id(outbox_id=outbox_id)
-
     async def process_payment(self, payment_id: UUID) -> PaymentEntity | None:
         payment = await self.get_payment_by_id(payment_id=payment_id)
         if payment is None:

@@ -5,6 +5,7 @@ from payments.application.interfaces.outbox_repository import IOutboxRepository
 from payments.application.interfaces.payment_gateway import IPaymentGateway
 from payments.application.interfaces.payment_repository import IPaymentRepository
 from payments.application.interfaces.unit_of_work import IUnitOfWork
+from payments.application.interfaces.webhook_sender import IWebhookSender
 from payments.domain.entities.outbox_entity import OutboxEntity
 from payments.domain.entities.payment_entity import PaymentEntity
 from payments.domain.value_objects import PaymentGatewayResult
@@ -71,3 +72,11 @@ class FakePaymentGateway(IPaymentGateway):
     async def process(self, payment_entity: PaymentEntity) -> PaymentGatewayResult:
         self.processed_payments.append(payment_entity)
         return self.result
+
+
+class FakeWebhookSender(IWebhookSender):
+    def __init__(self) -> None:
+        self.sent_payments: list[PaymentEntity] = []
+
+    async def send_payment_processed(self, payment: PaymentEntity) -> None:
+        self.sent_payments.append(payment)
